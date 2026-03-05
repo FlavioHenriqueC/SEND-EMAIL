@@ -6,9 +6,9 @@ import urllib.parse
 
 # --- FUNÇÃO DE ENVIO (SEU BACKEND) ---
 def disparar_email(destinatario):
-    email_origem = "XXX XX XX XXX"
+    email_origem = "xxx xxx xxxx"
     # LEMBRE-SE: Use a senha de 16 letras do Google aqui
-    senha_app = "XXXX XXXXX XXXXX"
+    senha_app = "xx xx xxxx xxx"
 
     
     msg = EmailMessage()
