@@ -8,7 +8,7 @@ import os
 # --- LÓGICA DE ENVIO ---
 def disparar_email(destinatario):
     email_origem = "flaviordaypaa55@gmail.com"
-    senha_app = "mtlc brrp jfoh pyfj" 
+    senha_app = "xxx xxx xxx xxxx" 
     
     msg = EmailMessage()
     msg['Subject'] = "TE AMO LINDA"
