@@ -3,22 +3,20 @@ import ssl
 from email.message import EmailMessage
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import urllib.parse
-import os
 
-# --- LÓGICA DE ENVIO ---
-def disparar_email(destinatario):
+# --- LÓGICA DE ENVIO ATUALIZADA ---
+def disparar_email(destinatario, assunto, corpo):
     email_origem = "flaviordaypaa55@gmail.com"
-    senha_app = "xxx xxx xxx xxxx" 
+    senha_app = "m**** **** *** ***" 
     
     msg = EmailMessage()
-    msg['Subject'] = "TE AMO LINDA"
+    msg['Subject'] = assunto  # Agora usa o que veio do HTML
     msg['From'] = email_origem
     msg['To'] = destinatario
-    msg.set_content("VOCÊ É SUPER LINDA!")
+    msg.set_content(corpo)    # Agora usa o que veio do HTML
 
     contexto = ssl.create_default_context()
     try:
-        print(f"Conectando ao Gmail para enviar para: {destinatario}...")
         with smtplib.SMTP("smtp.gmail.com", 587, timeout=15) as servidor:
             servidor.starttls(context=contexto)
             servidor.login(email_origem, senha_app)
@@ -28,41 +26,39 @@ def disparar_email(destinatario):
         print(f"❌ Erro no servidor SMTP: {e}")
         return False
 
-# --- SERVIDOR WEB ---
+# --- SERVIDOR WEB ATUALIZADO ---
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
-        # Rota para o CSS: se o navegador pedir /style.css
+        # (Seu código do_GET continua igual aqui...)
         if self.path == "/style.css":
-            try:
-                with open("style.css", "rb") as f:
-                    self.send_response(200)
-                    self.send_header("Content-type", "text/css")
-                    self.end_headers()
-                    self.wfile.write(f.read())
-            except FileNotFoundError:
-                self.send_error(404, "Arquivo style.css não encontrado")
-        
-        # Rota para a página principal (HTML)
+            self.servir_arquivo("style.css", "text/css")
         else:
-            self.send_response(200)
-            self.send_header("Content-type", "text/html; charset=utf-8")
-            self.end_headers()
-            try:
-                with open("index.html", "rb") as f:
-                    self.wfile.write(f.read())
-            except FileNotFoundError:
-                self.wfile.write("Erro: O arquivo index.html não foi encontrado!".encode())
+            self.servir_arquivo("index.html", "text/html; charset=utf-8")
+
+    def servir_arquivo(self, nome, tipo):
+        try:
+            with open(nome, "rb") as f:
+                self.send_response(200)
+                self.send_header("Content-type", tipo)
+                self.end_headers()
+                self.wfile.write(f.read())
+        except:
+            self.send_error(404)
 
     def do_POST(self):
         content_length = int(self.headers['Content-Length'])
         post_data = self.rfile.read(content_length).decode('utf-8')
         dados = urllib.parse.parse_qs(post_data)
         
-        # O formulário HTML deve ter action="/" para cair aqui
+        # PEGANDO AS NOVAS INFORMAÇÕES DO HTML
         email_cliente = dados.get('email_destino', [''])[0]
+        assunto_cliente = dados.get('assunto', [''])[0]
+        corpo_cliente = dados.get('corpo', [''])[0]
 
-        print(f"Solicitação recebida para: {email_cliente}")
-        sucesso = disparar_email(email_cliente)
+        print(f"Enviando: {assunto_cliente} para {email_cliente}")
+        
+        # PASSANDO PARA A FUNÇÃO DE ENVIO
+        sucesso = disparar_email(email_cliente, assunto_cliente, corpo_cliente)
 
         self.send_response(200)
         self.send_header("Content-type", "text/html; charset=utf-8")
@@ -75,7 +71,8 @@ class Handler(BaseHTTPRequestHandler):
         <html>
             <body style="font-family: sans-serif; text-align: center; padding: 50px;">
                 <h1 style="color: {cor};">{status}</h1>
-                <p>Destinatário: {email_cliente}</p>
+                <p><b>Para:</b> {email_cliente}</p>
+                <p><b>Assunto:</b> {assunto_cliente}</p>
                 <a href="/">Voltar</a>
             </body>
         </html>
